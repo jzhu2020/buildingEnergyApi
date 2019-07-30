@@ -34,7 +34,7 @@ def live_plotter(x_vec, y1_data, line1, identifier='', pause_time=0.1):
 def live_plotter_xy(x_vec, y1_data, line1, identifier='', pause_time=0.01, xlabel="X Label", ylabel="Y Label", title='Title:'):
     if line1 == []:
         plt.ion()
-        fig = plt.figure(figsize=(13, 6))
+        fig = plt.figure(figsize=(7, 3))
         ax = fig.add_subplot(111)
         line1, = ax.plot(x_vec, y1_data, 'r-o', alpha=0.8)
         plt.xlabel(xlabel)

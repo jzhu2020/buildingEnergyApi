@@ -8,11 +8,12 @@ from building_data_requests import get_value
 
 class SensorGrapher:
 
-    def __init__(self, facility, sensor, wait_time=5, max_time=60):
+    def __init__(self, facility, sensor, label="label", wait_time=5, max_time=60):
         self.facility = facility
         self.sensor = sensor
         self.wait_time = wait_time
         self.max_time = max_time
+        self.label = label
 
     def get_value(self):
         return get_value(self.facility, self.sensor)
@@ -29,7 +30,7 @@ class SensorGrapher:
         self.x_vec = np.append(int(self.x_vec[0] - self.wait_time), self.x_vec)
 
         self.line = live_plotter_xy(self.x_vec, self.y_vec, self.line, pause_time=self.wait_time, xlabel="Time (sec)", ylabel="Power ({})".format(units),
-                                title=self.facility + " Power v Time")
+                                title=self.facility + " " + self.label + " Power v Time")
 
         if (len(self.x_vec) > self.max_time // self.wait_time):
             self.x_vec = np.delete(self.x_vec, 0)

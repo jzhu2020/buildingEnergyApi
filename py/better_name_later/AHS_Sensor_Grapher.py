@@ -1,4 +1,6 @@
 
+import time
+
 import sys
 sys.path.insert(1, '/home/justin/PycharmProjects/buildingEnergyApi/py/better_name_later')
 import SensorGrapher
@@ -26,7 +28,7 @@ for line in lines:
     if(label == "Label"):
         continue
 
-    sensor = SensorGrapher.SensorGrapher(facility, meter)
+    sensor = SensorGrapher.SensorGrapher(facility, meter, label=label, wait_time=2)
     sensor.init_plot()
     sensors.append(sensor)
 
@@ -35,3 +37,5 @@ for line in lines:
 while True:
     for sensor in sensors:
         sensor.update_plot()
+        time.sleep(1)
+
