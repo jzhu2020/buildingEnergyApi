@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import time
-from building_data_requests import get_value
+from py.building_data_requests import get_value
 
 value, units = get_value( 'ahs', 3007360 )
 

@@ -1,6 +1,9 @@
 from pylive import live_plotter_xy
 import numpy as np
 import time
+
+import sys
+sys.path.insert(1, '/home/justin/PycharmProjects/buildingEnergyApi/py')
 from building_data_requests import get_value
 
 x_vec = np.full(1, 0)
