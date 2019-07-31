@@ -49,4 +49,6 @@ def live_plotter_xy(x_vec, y1_data, line1, identifier='', pause_time=0.01, xlabe
 
     plt.pause(pause_time)
 
+    plt.x_lim(left=-60, right=0)
+
     return line1
