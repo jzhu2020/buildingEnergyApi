@@ -58,12 +58,12 @@ no_water_houses = []
 per_household = []
 for house in households:
     result = query(conn, "Select current_reading From Water Where address_street_name='{}' \
-                         And address_street_number='{}' And service_id='{}' And Not(prior_reading==current_reading And current_reading Is Null And prior_reading Is Null) \
-                         And Not(prior_date==Water.current_date And Water.current_date Is Null And prior_date Is Null) And transaction_type='Charge' \
+                         And address_street_number='{}' And service_id='{}' And Not(prior_reading==current_reading And current_reading Is Not Null And prior_reading Is Not Null) \
+                         And Not(prior_date==Water.current_date And Water.current_date Is Not Null And prior_date Is Not Null) And transaction_type='Charge' \
                          Order By prior_date, Water.current_date Asc;".format(house[0], house[1], house[2]))
     prior_reading = query(conn, "Select prior_reading From Water Where address_street_name='{}' \
-                         And address_street_number='{}' And service_id='{}' And Not(prior_reading==current_reading And current_reading Is Null And prior_reading Is Null) \
-                         And Not(prior_date==Water.current_date And Water.current_date Is Null And prior_date Is Null) And transaction_type='Charge' \
+                         And address_street_number='{}' And service_id='{}' And Not(prior_reading==current_reading And current_reading Is Not Null And prior_reading Is Not Null) \
+                         And Not(prior_date==Water.current_date And Water.current_date Is Not Null And prior_date Is Not Null) And transaction_type='Charge' \
                          Order By prior_date, Water.current_date Asc;".format(house[0], house[1], house[2]))
 
     total = 0
