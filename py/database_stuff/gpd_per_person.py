@@ -45,7 +45,7 @@ for i in range(len(consumption_per_person)):
 print house_data
 
 
-sorted_data = sorted(house_data, key=lambda x: x[4])
+sorted_data = sorted(house_data, key=lambda x: (x[4], x[3]))
 sorted_data.reverse()
 
 print sorted_data

@@ -11,7 +11,7 @@ conn = establish_connection("student.sqlite")
 count_default = 0
 
 
-def get_days(house_address):
+def get_days(house_address):  # TODO perfect time calculations (prior and current date)
     dates = query(conn, "Select prior_date, Water.current_date From Water \
                         Where address_street_name='{}' And address_street_number='{}' And service_id='{}' And transaction_type='Charge' \
                         Order by prior_date, Water.current_date Asc;".format(house_address[0], house_address[1], house_address[2]))
@@ -54,21 +54,22 @@ def print_to_csv(file_loc, data):
 households = query(conn, "Select Distinct address_street_name, address_street_number, service_id From Water")
 streets = query(conn, "Select Distinct address_street_name From Water")
 
-
+no_water_houses = []
 per_household = []
 for house in households:
     result = query(conn, "Select current_reading From Water Where address_street_name='{}' \
-                         And address_street_number='{}' And service_id='{}' And prior_reading!=current_reading \
-                         And prior_date!=Water.current_date  And transaction_type='Charge' \
+                         And address_street_number='{}' And service_id='{}' And Not(prior_reading==current_reading And current_reading Is Null And prior_reading Is Null) \
+                         And Not(prior_date==Water.current_date And Water.current_date Is Null And prior_date Is Null) And transaction_type='Charge' \
                          Order By prior_date, Water.current_date Asc;".format(house[0], house[1], house[2]))
     prior_reading = query(conn, "Select prior_reading From Water Where address_street_name='{}' \
-                         And address_street_number='{}' And service_id='{}' And prior_reading!=current_reading \
-                         And prior_date!=Water.current_date And transaction_type='Charge' \
+                         And address_street_number='{}' And service_id='{}' And Not(prior_reading==current_reading And current_reading Is Null And prior_reading Is Null) \
+                         And Not(prior_date==Water.current_date And Water.current_date Is Null And prior_date Is Null) And transaction_type='Charge' \
                          Order By prior_date, Water.current_date Asc;".format(house[0], house[1], house[2]))
 
     total = 0
     if len(result) == 0:
         per_household.append(0)
+        no_water_houses.append(house)
         continue
     prev = result[0][0]
     for i in range(len(result)):
@@ -121,6 +122,7 @@ print("Number of houses using >500 Gallons per day: " + str(count_500))
 print("Number of houses using >1000 Gallons per day: " + str(count_1000))
 print("Number of incomplete sets of dates: " + str(count_default))
 print "Average gallons per day per household " + str(statistics.mean(average_per_house))
+# print no_water_houses
 
 print_to_csv("HouseAverageGPD.csv", household_data)
 print_to_csv("StreetAverageGPD.csv", street_data)

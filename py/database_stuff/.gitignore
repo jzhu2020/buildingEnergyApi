@@ -1,1 +1,6 @@
 *.sqlite
+*.csv
+*.sql
+*.xlsx
+*.txt
+*.c
