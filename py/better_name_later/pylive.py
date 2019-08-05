@@ -43,12 +43,14 @@ def live_plotter_xy(x_vec, y1_data, line1, identifier='', pause_time=0.01, xlabe
         plt.show()
 
     line1.set_data(x_vec, y1_data)
-    plt.xlim(np.min(x_vec), np.max(x_vec))
+    plt.xlim(-60, 0)
     if np.min(y1_data) <= line1.axes.get_ylim()[0] or np.max(y1_data) >= line1.axes.get_ylim()[1]:
         plt.ylim([np.min(y1_data) - np.std(y1_data), np.max(y1_data) + np.std(y1_data)])
 
     plt.pause(pause_time)
 
-    plt.x_lim(left=-60, right=0)
-
     return line1
+
+
+def get_plot():
+    return plt

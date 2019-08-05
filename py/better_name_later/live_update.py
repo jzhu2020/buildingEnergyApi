@@ -16,6 +16,7 @@ line1 = []
 # line2 = []
 
 wait_time = 5 # seconds
+elapsed_time = 0
 
 while True:
     kW, units = get_value('ahs', 3007360)
@@ -32,6 +33,13 @@ while True:
         # x_vec = np.delete(x_vec, 0)
         # y_vec1 = np.delete(y_vec1, 0)
         # y_vec2 = np.delete(y_vec2, 0)
+    elapsed_time += wait_time
+    if(elapsed_time > 90):
+        break;
+
+plt = get_plot()
+plt.plot()
+time.sleep(60)
 
 
 
