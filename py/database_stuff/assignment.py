@@ -31,8 +31,8 @@ def get_days(house_address):  # TODO perfect time calculations (prior and curren
 
     dates = query(conn, "Select prior_date, Water.current_date From Water \
                         Where address_street_name='{}' And address_street_number='{}' And service_id='{}' \
-                        And (Water.current_date > '{}' Or Water.current_date Is Null) And transaction_type='Charge' \
-                        Order by prior_date, Water.current_date Asc;".format(house_address[0], house_address[1], house_address[2], last_adjustment))
+                        And (Water.current_date>'{}' Or prior_date>'{}') And transaction_type='Charge' \
+                        Order by prior_date, Water.current_date Asc;".format(house_address[0], house_address[1], house_address[2], last_adjustment, last_adjustment))
 
     try:
         first = datetime.strptime(dates[0][0], "%Y-%m-%d %H:%M:%S")
@@ -78,10 +78,10 @@ for house in households:
 
     last_adjustment = get_last_adjustment(house)
 
-    result = query(conn, "Select current_reading, prior_reading, transaction_type From Water Where address_street_name='{}' \
-                         And address_street_number='{}' And service_id='{}' And Not(prior_reading==current_reading And current_reading Is Not Null And prior_reading Is Not Null) \
-                         And Not(prior_date==Water.current_date And Water.current_date Is Not Null And prior_date Is Not Null) \
-                         Order By prior_date, Water.current_date Asc;".format(house[0], house[1], house[2]))
+    result = query(conn, "Select current_reading, prior_reading From Water Where address_street_name='{}' \
+                         And address_street_number='{}' And service_id='{}' And (prior_reading!=current_reading or prior_reading is Null or current_reading is Null) \
+                         And (prior_date!=Water.current_date or prior_date is Null or Water.current_date is Null) And (Water.current_date>'{}' Or prior_date>'{}') And transaction_type='Charge'\
+                         Order By prior_date, Water.current_date Asc;".format(house[0], house[1], house[2], last_adjustment, last_adjustment))
     # prior_reading = query(conn, "Select prior_reading From Water Where address_street_name='{}' \
     #                      And address_street_number='{}' And service_id='{}' And Not(prior_reading==current_reading And current_reading Is Not Null And prior_reading Is Not Null) \
     #                      And Not(prior_date==Water.current_date And Water.current_date Is Not Null And prior_date Is Not Null) And transaction_type='Charge' \
@@ -102,11 +102,6 @@ for house in households:
             prev = 0
         total += int(result[i][0]) - prev
         prev = int(result[i][0])
-
-        if result[i][2] == "Adjustment":
-            # Then what? Discard all data before this reading
-            total = 0
-            prev = max(int(result[i][0]), int(result[i][0]))
 
     total *= cubic_ft_to_gallons
 
