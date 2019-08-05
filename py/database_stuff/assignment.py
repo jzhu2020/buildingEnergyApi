@@ -1,12 +1,10 @@
 
-from sqlquery import *
-from datetime import datetime
+from helpers import *
 
+from datetime import datetime
 import statistics
 
 
-cubic_ft_to_gallons = float(float(1728) / float(231))
-number_of_days = 90 * 6
 conn = establish_connection("student.sqlite")
 count_default = 0
 
@@ -150,19 +148,19 @@ print_to_csv("HouseAverageGPD.csv", household_data)
 print_to_csv("StreetAverageGPD.csv", street_data)
 
 
-# Copied from https://stackoverflow.com/questions/17684610/python-convert-csv-to-xlsx
-import os
-import glob
-import csv
-from xlsxwriter.workbook import Workbook
-
-
-for csvfile in glob.glob(os.path.join('.', '*.csv')):
-    workbook = Workbook(csvfile[:-4] + '.xlsx')
-    worksheet = workbook.add_worksheet()
-    with open(csvfile, 'r') as f:
-        reader = csv.reader(f)
-        for r, row in enumerate(reader):
-            for c, col in enumerate(row):
-                worksheet.write(r, c, col)
-    workbook.close()
+# # Copied from https://stackoverflow.com/questions/17684610/python-convert-csv-to-xlsx
+# import os
+# import glob
+# import csv
+# from xlsxwriter.workbook import Workbook
+#
+#
+# for csvfile in glob.glob(os.path.join('.', '*.csv')):
+#     workbook = Workbook(csvfile[:-4] + '.xlsx')
+#     worksheet = workbook.add_worksheet()
+#     with open(csvfile, 'r') as f:
+#         reader = csv.reader(f)
+#         for r, row in enumerate(reader):
+#             for c, col in enumerate(row):
+#                 worksheet.write(r, c, col)
+#     workbook.close()
