@@ -11,10 +11,28 @@ conn = establish_connection("student.sqlite")
 count_default = 0
 
 
+def get_last_adjustment(house_address):
+    adjustments = query(conn, "Select prior_date, Water.current_date From Water \
+                            Where address_street_name='{}' And address_street_number='{}' And service_id='{}' And transaction_type='Adjustment'\
+                            Order by prior_date, Water.current_date Asc;".format(house_address[0], house_address[1],
+                                                                                 house_address[2]))
+
+    if len(adjustments) == 0:
+        last_adjustment = "0000-00-00 00:00:00"  # the beginning of time will be before everything
+    else:
+        last_adjustment = adjustments[len(adjustments) - 1][1]
+        if last_adjustment is None:
+            last_adjustment = adjustments[len(adjustments) - 1][0]
+    return last_adjustment
+
+
 def get_days(house_address):  # TODO perfect time calculations (prior and current date)
+    last_adjustment = get_last_adjustment(house_address)
+
     dates = query(conn, "Select prior_date, Water.current_date From Water \
-                        Where address_street_name='{}' And address_street_number='{}' And service_id='{}' And transaction_type='Charge' \
-                        Order by prior_date, Water.current_date Asc;".format(house_address[0], house_address[1], house_address[2]))
+                        Where address_street_name='{}' And address_street_number='{}' And service_id='{}' \
+                        And (Water.current_date > '{}' Or Water.current_date Is Null) And transaction_type='Charge' \
+                        Order by prior_date, Water.current_date Asc;".format(house_address[0], house_address[1], house_address[2], last_adjustment))
 
     try:
         first = datetime.strptime(dates[0][0], "%Y-%m-%d %H:%M:%S")
@@ -57,29 +75,38 @@ streets = query(conn, "Select Distinct address_street_name From Water")
 no_water_houses = []
 per_household = []
 for house in households:
-    result = query(conn, "Select current_reading From Water Where address_street_name='{}' \
-                         And address_street_number='{}' And service_id='{}' And Not(prior_reading==current_reading And current_reading Is Not Null And prior_reading Is Not Null) \
-                         And Not(prior_date==Water.current_date And Water.current_date Is Not Null And prior_date Is Not Null) And transaction_type='Charge' \
-                         Order By prior_date, Water.current_date Asc;".format(house[0], house[1], house[2]))
-    prior_reading = query(conn, "Select prior_reading From Water Where address_street_name='{}' \
-                         And address_street_number='{}' And service_id='{}' And Not(prior_reading==current_reading And current_reading Is Not Null And prior_reading Is Not Null) \
-                         And Not(prior_date==Water.current_date And Water.current_date Is Not Null And prior_date Is Not Null) And transaction_type='Charge' \
-                         Order By prior_date, Water.current_date Asc;".format(house[0], house[1], house[2]))
 
+    last_adjustment = get_last_adjustment(house)
+
+    result = query(conn, "Select current_reading, prior_reading, transaction_type From Water Where address_street_name='{}' \
+                         And address_street_number='{}' And service_id='{}' And Not(prior_reading==current_reading And current_reading Is Not Null And prior_reading Is Not Null) \
+                         And Not(prior_date==Water.current_date And Water.current_date Is Not Null And prior_date Is Not Null) \
+                         Order By prior_date, Water.current_date Asc;".format(house[0], house[1], house[2]))
+    # prior_reading = query(conn, "Select prior_reading From Water Where address_street_name='{}' \
+    #                      And address_street_number='{}' And service_id='{}' And Not(prior_reading==current_reading And current_reading Is Not Null And prior_reading Is Not Null) \
+    #                      And Not(prior_date==Water.current_date And Water.current_date Is Not Null And prior_date Is Not Null) And transaction_type='Charge' \
+    #                      Order By prior_date, Water.current_date Asc;".format(house[0], house[1], house[2]))
+
+    # TODO properly debug this section, it likely doesn't process the readings correctly
     total = 0
     if len(result) == 0:
         per_household.append(0)
         no_water_houses.append(house)
         continue
-    prev = result[0][0]
+    prev = int(result[0][0])
     for i in range(len(result)):
-        if prior_reading[i][0] is not None and prior_reading[i][0] is int:
-            prev = prior_reading[i][0]
-        if result[i][0] - prev < 0:
+        if result[i][0] is not None and result[i][1] is int:
+            prev = int(result[i][1])
+        if int(result[i][0]) - prev < 0:
             # meter was (likely) reset
             prev = 0
-        total += result[i][0] - prev
-        prev = result[i][0]
+        total += int(result[i][0]) - prev
+        prev = int(result[i][0])
+
+        if result[i][2] == "Adjustment":
+            # Then what? Discard all data before this reading
+            total = 0
+            prev = max(int(result[i][0]), int(result[i][0]))
 
     total *= cubic_ft_to_gallons
 
@@ -122,7 +149,7 @@ print("Number of houses using >500 Gallons per day: " + str(count_500))
 print("Number of houses using >1000 Gallons per day: " + str(count_1000))
 print("Number of incomplete sets of dates: " + str(count_default))
 print "Average gallons per day per household " + str(statistics.mean(average_per_house))
-# print no_water_houses
+print no_water_houses
 
 print_to_csv("HouseAverageGPD.csv", household_data)
 print_to_csv("StreetAverageGPD.csv", street_data)
