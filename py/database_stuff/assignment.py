@@ -4,7 +4,6 @@ from helpers import *
 from datetime import datetime
 import statistics
 
-
 conn = establish_connection("student.sqlite")
 count_default = 0
 
@@ -34,12 +33,17 @@ def get_days(house_address):  # TODO perfect time calculations (prior and curren
 
     try:
         first = datetime.strptime(dates[0][0], "%Y-%m-%d %H:%M:%S")
-        last = datetime.strptime(dates[len(dates) - 1][0], "%Y-%m-%d %H:%M:%S")
+        last = datetime.strptime(dates[len(dates) - 1][1], "%Y-%m-%d %H:%M:%S")
         total_days = (last - first).days
     except:
-        global count_default
-        total_days = len(dates) * 90
-        count_default += len(dates)
+        try:
+            first = datetime.strptime(dates[0][0], "%Y-%m-%d %H:%M:%S")
+            last = datetime.strptime(dates[len(dates) - 1][0], "%Y-%m-%d %H:%M:%S")
+            total_days = (last - first).days
+        except:
+            global count_default
+            total_days = len(dates) * 90
+            count_default += len(dates)
     return total_days
 
 
@@ -95,6 +99,7 @@ for house in households:
     for i in range(len(result)):
         if result[i][0] is not None and result[i][1] is int:
             prev = int(result[i][1])
+            print "used prior"
         if int(result[i][0]) - prev < 0:
             # meter was (likely) reset
             prev = 0
