@@ -13,24 +13,15 @@ for i in range(df.shape[0]):
     people_per_house.append(0)
 
 conn = establish_connection("student.sqlite")
-people = query(conn, "Select service_id, resident_id From Lookup")
+people = query(conn, "Select service_id From Lookup")
 
 for person in people:
     person_str = person[0].encode('ascii', 'ignore')
-    if person_str == '':  # attempt to use resident_id to find the address
-
-        address = address_from_resident_id(person[1].encode('ascii', 'ignore'))
-        index = df.index[(df.astype('str')['Street'] == address[0]) & (df.astype('str')['Street Address'] == str(address[1]))]
-
-        if len(index) == 0:
-            supposed_homeless.append(person)  # this is the case where we can't associate someone with a particular address' water consumption
-            continue
-    else:  # can use service_id to identify the person
-        index = df.index[df.astype('str')['Service_ID'] == person_str].tolist()
-        # print index
-        if len(index) == 0:
-            supposed_homeless.append(person)  # this is the case where we can't associate someone with a particular address' water consumption
-            continue
+    index = df.index[df.astype('str')['Service_ID'] == person_str].tolist()
+    # print index
+    if len(index) == 0:
+        supposed_homeless.append(person)  # this is the case where we can't associate someone with a particular address' water consumption
+        continue
 
     people_per_house[index[0]] += 1
 
