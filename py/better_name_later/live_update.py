@@ -1,4 +1,4 @@
-from pylive import live_plotter_xy
+from pylive import live_plotter_xy, get_plot
 import numpy as np
 import time
 
@@ -9,6 +9,7 @@ from building_data_requests import get_value
 x_vec = np.full(1, 0)
 kW, units = get_value('ahs', 3007360)
 y_vec1 = np.full(len(x_vec), int(kW))
+
 
 # kW, units = get_value('west_middle-12', 3027266) # West Middle
 # y_vec2 = np.full(len(x_vec), int(kW))
@@ -34,8 +35,8 @@ while True:
         # y_vec1 = np.delete(y_vec1, 0)
         # y_vec2 = np.delete(y_vec2, 0)
     elapsed_time += wait_time
-    if(elapsed_time > 90):
-        break;
+    if elapsed_time > 90:
+        break
 
 plt = get_plot()
 plt.plot()
